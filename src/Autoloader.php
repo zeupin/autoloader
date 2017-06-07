@@ -37,8 +37,8 @@ class Autoloader
     {
         foreach (self::$_queue as $item) {
             switch ($item['type']) {
-                case 'map':
-                    $result = self::matchMap($FQCN, $item['mapfile'], $item['rootpath'], $item['map']);
+                case 'classmap':
+                    $result = self::matchClassmap($FQCN, $item['mapfile'], $item['rootpath'], $item['map']);
                     if ($result) {
                         return true;
                     }
@@ -50,7 +50,6 @@ class Autoloader
                         return true;
                     }
                     break;
-
 
                 case 'psr4':
                     $result = self::matchPsr4($FQCN, $item['namespace'], $item['rootpath'], $item['len']);
@@ -151,12 +150,12 @@ class Autoloader
     /**
      * Adds a class map file
      *
-     * @param string $mapfile   The real path of the map file.
+     * @param string $mapfile   The real path of the class map file.
      * @param string $rootpath  The root path. default uses the mapfile's directory.
      *
      * @return bool
      */
-    public static function addMap($mapfile, $rootpath = null)
+    public static function addClassmap($mapfile, $rootpath = null)
     {
         // Initialize
         self::init();
@@ -179,7 +178,7 @@ class Autoloader
 
         // Adds it to $_queue
         self::$_queue[] = [
-            'type'     => 'map',
+            'type'     => 'classmap',
             'mapfile'  => $mapfile,
             'rootpath' => $rootpath,
             'map'      => null,
@@ -289,7 +288,7 @@ class Autoloader
     /**
      * Matches FQCN from the map file
      */
-    private static function matchMap($FQCN, $mapfile, $rootpath, &$map)
+    private static function matchClassmap($FQCN, $mapfile, $rootpath, &$map)
     {
         // If first run, loads the mapfile content to $map.
         if (is_null($map)) {

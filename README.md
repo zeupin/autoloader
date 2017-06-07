@@ -1,6 +1,6 @@
 # autoloader
 
-Autoloader is a part of Dida Framework.
+Autoloader is a powerful class loader. It's a part of Dida Framework.
 
 ## Installation
 
@@ -8,6 +8,12 @@ Autoloader is a part of Dida Framework.
 
 ```
 composer require dida/autoloader
+```
+
+### Download the latest Autoloader.php
+
+```
+https://github.com/zeupin/autoloader/blob/master/src/Autoloader.php
 ```
 
 ## API
@@ -23,7 +29,7 @@ public static function init();
 ```php
 public static function addPsr4($namespace, $rootpath);
 public static function addNamespace($namespace, $rootpath);
-public static function addMap($mapfile, $rootpath = null);
+public static function addClassmap($mapfile, $rootpath = null);
 public static function addAlias($alias, $real);
 ```
 
@@ -33,10 +39,9 @@ public static function addAlias($alias, $real);
 require FOO_PATH . 'Autoloader.php';
 
 Autoloader::init();
-Autoloader::addMap(__DIR__ . 'FooMap.php', '/your/real/root/path');
+Autoloader::addClassmap(__DIR__ . 'FooMap.php', '/your/real/root/path');
 Autoloader::addNamespace('Foo\\Bar', __DIR__ . '/Your/Path');
 ```
-
 
 ### A map file sample:
 
