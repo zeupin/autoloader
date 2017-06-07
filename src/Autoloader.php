@@ -15,9 +15,11 @@ class Autoloader
      */
     public static function init()
     {
+        // only run once
         if (self::$_initialized) {
             return;
         }
+
         // register the autoload() callback
         spl_autoload_register([__CLASS__, 'autoload']);
 
@@ -152,7 +154,7 @@ class Autoloader
      * @param string $mapfile   The real path of the map file.
      * @param string $rootpath  The root path. default uses the mapfile's directory.
      *
-     * @return bool 成功返回true，有问题返回false
+     * @return bool
      */
     public static function addMap($mapfile, $rootpath = null)
     {
