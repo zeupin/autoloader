@@ -1,0 +1,23 @@
+{
+  "name": "dida/autoloader",
+  "description": "A class autoloader",
+  "type": "library",
+  "license": "MIT",
+  "homepage": "https://github.com/zeupin/autoloader",
+  "authors": [
+    {
+      "name": "Macc Liu",
+      "email": "mail@maccliu.com",
+      "homepage": "http://maccliu.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^5.4 || ^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Autoloader\\": "src/"
+    }
+  }
+}
