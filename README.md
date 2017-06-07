@@ -56,5 +56,5 @@ MIT license.
 
 ## Credits
 
-* Zeupin, LLC. -- <http://zeupin.com>
+* Zeupin, LLC -- <http://zeupin.com>
 
