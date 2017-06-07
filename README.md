@@ -1,4 +1,4 @@
-# autoloader
+# Autoloader
 
 Autoloader is a powerful class loader. It's a part of Dida Framework.
 
