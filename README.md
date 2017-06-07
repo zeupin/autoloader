@@ -32,9 +32,9 @@ public static function addAlias($alias, $real);
 ```php
 require FOO_PATH . 'Autoloader.php';
 
-Loader::init();
-Loader::addMap(__DIR__ . 'FooMap.php', '/your/real/root/path');
-Loader::addNamespace('Foo\\Bar', __DIR__ . '/Your/Path');
+Autoloader::init();
+Autoloader::addMap(__DIR__ . 'FooMap.php', '/your/real/root/path');
+Autoloader::addNamespace('Foo\\Bar', __DIR__ . '/Your/Path');
 ```
 
 
