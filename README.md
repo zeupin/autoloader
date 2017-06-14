@@ -55,11 +55,14 @@ return [
 ];
 ```
 
-## License
+## Authors
 
-MIT license.
+* [Macc Liu](https://github.com/maccliu)
 
 ## Credits
 
-* Zeupin, LLC -- <http://zeupin.com>
+* [Zeupin, LLC](http://zeupin.com) , especially [Dida Team](http://dida.zeupin.com)
 
+## License
+
+Under the [MIT license](LICENSE).
