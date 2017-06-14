@@ -13,7 +13,7 @@ composer require dida/autoloader
 ### Download the latest Autoloader.php
 
 ```
-https://github.com/zeupin/autoloader/blob/master/src/Autoloader.php
+https://github.com/zeupin/dida-autoloader/blob/master/src/Autoloader.php
 ```
 
 ## API
