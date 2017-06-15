@@ -43,15 +43,17 @@ Autoloader::addClassmap(__DIR__ . 'FooMap.php', '/your/real/root/path');
 Autoloader::addNamespace('Foo\\Bar', __DIR__ . '/Your/Path');
 ```
 
-### A map file sample:
+### Classmap File
+
+If you use the `addClassmap($mapfile, $rootpath)` function, here is a mapfile sample:
 
 ```php
 <?php
 return [
-    'Dida\\Application'    => 'Application/Application.php',
-    'Dida\\Config'         => 'Config/Config.php',
-    'Dida\\Container'      => 'Container/Container.php',
-    'Dida\\Controller'     => 'Controller/Controller.php',
+    'Dida\\Application' => 'Application/Application.php',
+    'Dida\\Config'      => 'Config/Config.php',
+    'Dida\\Container'   => 'Container/Container.php',
+    'Dida\\Controller'  => 'Controller/Controller.php',
 ];
 ```
 
@@ -65,4 +67,4 @@ return [
 
 ## License
 
-Under the [MIT license](LICENSE).
+Copyright (c) 2017 Zeupin, LLC. Released under the [MIT license](LICENSE).
