@@ -65,4 +65,4 @@ return [
 
 ## License
 
-Under the [MIT license](LICENSE).
+Copyright (c) 2017 Zeupin, LLC. Released under the [MIT license](LICENSE).
