@@ -115,83 +115,26 @@ class Autoloader
 
 
     /**
-     * Adds a namespace.
-     *
-     * If try to match the \Namepsace\Your\Cool\Class,
-     * it will check:
-     *   <rootpath>/Your/Cool/Class.php
-     *   <rootpath>/Your/Cool/Class/Class.php
-     *
-     * @param string $namespace  Namespace. such as 'your\\namespace'
-     * @param string $rootpath   Rootpath. such as '/your/namespace/root/rootpath/'
-     *
-     * @return bool
+     * Matches a PSR-4 namespace
      */
-    public static function addNamespace($namespace, $rootpath)
+    private static function matchPsr4($FQCN, $namespace, $rootpath, $len)
     {
-        // Initialize
-        self::init();
-
-        // Checks $rootpath
-        if (!file_exists($rootpath) || !is_dir($rootpath)) {
+        // Checks if the prefix is matched.
+        if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
             return false;
-        } else {
-            $rootpath = realpath($rootpath);
         }
 
-        // Preproccesses $namepsace
-        $namespace = trim($namespace, " \\\t\n\r\0\x0B");
+        // Strips the namespace
+        $rest = substr($FQCN, $len + 1);
 
-        // Adds it to $_queue
-        self::$_queue[] = [
-            'type'      => 'namespace',
-            'namespace' => $namespace,
-            'rootpath'  => $rootpath,
-            'len'       => strlen($namespace),
-        ];
-
-        return true;
-    }
-
-
-    /**
-     * Adds a class map file
-     *
-     * @param string $mapfile   The real path of the class map file.
-     * @param string $rootpath  The root path. default uses the mapfile's directory.
-     *
-     * @return bool
-     */
-    public static function addClassmap($mapfile, $rootpath = null)
-    {
-        // Initialize
-        self::init();
-
-        // Checks $mapfile
-        if (!file_exists($mapfile) || !is_file($mapfile)) {
-            return false;
+        // Checks if the target php file exists.
+        $target = "{$rootpath}/{$rest}.php";
+        if (file_exists($target) && is_file($target)) {
+            require $target;
+            return true;
         } else {
-            $mapfile = realpath($mapfile);
-        }
-
-        // Checks $rootpath
-        if (is_null($rootpath)) {
-            $rootpath = dirname($mapfile);
-        } elseif (!is_string($rootpath) || !file_exists($rootpath) || !is_dir($rootpath)) {
             return false;
-        } else {
-            $rootpath = realpath($rootpath);
         }
-
-        // Adds it to $_queue
-        self::$_queue[] = [
-            'type'     => 'classmap',
-            'mapfile'  => $mapfile,
-            'rootpath' => $rootpath,
-            'map'      => null,
-        ];
-
-        return true;
     }
 
 
@@ -231,33 +174,9 @@ class Autoloader
 
 
     /**
-     * Add an alias
-     *
-     * @param string $alias  Your\Class\Alias
-     * @param string $real   \Its\Real\FQCN
-     *
-     * @return bool
+     * Matches a PSR-0 namespace
      */
-    public static function addAlias($alias, $real)
-    {
-        // Initialize
-        self::init();
-
-        // Adds it to $_queue
-        self::$_queue[] = [
-            'type'  => 'alias',
-            'alias' => $alias,
-            'real'  => $real,
-        ];
-
-        return true;
-    }
-
-
-    /**
-     * Matches a PSR-4 namespace
-     */
-    private static function matchPsr4($FQCN, $namespace, $rootpath, $len)
+    private static function matchPsr0($FQCN, $namespace, $rootpath, $len)
     {
         // Checks if the prefix is matched.
         if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
@@ -267,14 +186,62 @@ class Autoloader
         // Strips the namespace
         $rest = substr($FQCN, $len + 1);
 
+        // deal with '_' in the rest
+        $rest = str_replace('_', DIRECTORY_SEPARATOR, $rest);
+
         // Checks if the target php file exists.
-        $target = "{$rootpath}/{$rest}.php";
+        if ($namespace === '') {
+            $target = "{$rootpath}/{$rest}.php";
+        } else {
+            $target = "{$rootpath}/{$namespace}/{$rest}.php";
+        }
+
         if (file_exists($target) && is_file($target)) {
             require $target;
             return true;
         } else {
             return false;
         }
+    }
+
+
+    /**
+     * Adds a namespace.
+     *
+     * If try to match the \Namepsace\Your\Cool\Class,
+     * it will check:
+     *   <rootpath>/Your/Cool/Class.php
+     *   <rootpath>/Your/Cool/Class/Class.php
+     *
+     * @param string $namespace  Namespace. such as 'your\\namespace'
+     * @param string $rootpath   Rootpath. such as '/your/namespace/root/rootpath/'
+     *
+     * @return bool
+     */
+    public static function addNamespace($namespace, $rootpath)
+    {
+        // Initialize
+        self::init();
+
+        // Checks $rootpath
+        if (!file_exists($rootpath) || !is_dir($rootpath)) {
+            return false;
+        } else {
+            $rootpath = realpath($rootpath);
+        }
+
+        // Preproccesses $namepsace
+        $namespace = trim($namespace, " \\\t\n\r\0\x0B");
+
+        // Adds it to $_queue
+        self::$_queue[] = [
+            'type'      => 'namespace',
+            'namespace' => $namespace,
+            'rootpath'  => $rootpath,
+            'len'       => strlen($namespace),
+        ];
+
+        return true;
     }
 
 
@@ -328,6 +295,47 @@ class Autoloader
 
 
     /**
+     * Adds a class map file
+     *
+     * @param string $mapfile   The real path of the class map file.
+     * @param string $rootpath  The root path. default uses the mapfile's directory.
+     *
+     * @return bool
+     */
+    public static function addClassmap($mapfile, $rootpath = null)
+    {
+        // Initialize
+        self::init();
+
+        // Checks $mapfile
+        if (!file_exists($mapfile) || !is_file($mapfile)) {
+            return false;
+        } else {
+            $mapfile = realpath($mapfile);
+        }
+
+        // Checks $rootpath
+        if (is_null($rootpath)) {
+            $rootpath = dirname($mapfile);
+        } elseif (!is_string($rootpath) || !file_exists($rootpath) || !is_dir($rootpath)) {
+            return false;
+        } else {
+            $rootpath = realpath($rootpath);
+        }
+
+        // Adds it to $_queue
+        self::$_queue[] = [
+            'type'     => 'classmap',
+            'mapfile'  => $mapfile,
+            'rootpath' => $rootpath,
+            'map'      => null,
+        ];
+
+        return true;
+    }
+
+
+    /**
      * Matches FQCN from the map file
      */
     private static function matchClassmap($FQCN, $mapfile, $rootpath, &$map)
@@ -365,44 +373,36 @@ class Autoloader
 
 
     /**
+     * Add an alias
+     *
+     * @param string $alias  Your\Class\Alias
+     * @param string $real   \Its\Real\FQCN
+     *
+     * @return bool
+     */
+    public static function addAlias($alias, $real)
+    {
+        // Initialize
+        self::init();
+
+        // Adds it to $_queue
+        self::$_queue[] = [
+            'type'  => 'alias',
+            'alias' => $alias,
+            'real'  => $real,
+        ];
+
+        return true;
+    }
+
+
+    /**
      * Matches an alias
      */
     private static function matchAlias($FQCN, $alias, $real)
     {
         if ($FQCN === $alias) {
             return class_alias($real, $alias);
-        } else {
-            return false;
-        }
-    }
-
-
-    /**
-     * Matches a PSR-0 namespace
-     */
-    public static function matchPsr0($FQCN, $namespace, $rootpath, $len)
-    {
-        // Checks if the prefix is matched.
-        if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
-            return false;
-        }
-
-        // Strips the namespace
-        $rest = substr($FQCN, $len + 1);
-
-        // deal with '_' in the rest
-        $rest = str_replace('_', DIRECTORY_SEPARATOR, $rest);
-
-        // Checks if the target php file exists.
-        if ($namespace === '') {
-            $target = "{$rootpath}/{$rest}.php";
-        } else {
-            $target = "{$rootpath}/{$namespace}/{$rest}.php";
-        }
-
-        if (file_exists($target) && is_file($target)) {
-            require $target;
-            return true;
         } else {
             return false;
         }
