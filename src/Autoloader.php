@@ -38,28 +38,28 @@ class Autoloader
         foreach (self::$_queue as $item) {
             switch ($item['type']) {
                 case 'classmap':
-                    $result = self::matchClassmap($FQCN, $item['mapfile'], $item['rootpath'], $item['map']);
+                    $result = self::matchClassmap($FQCN, $item['mapfile'], $item['basedir'], $item['map']);
                     if ($result) {
                         return true;
                     }
                     break;
 
                 case 'namespace':
-                    $result = self::matchNamespace($FQCN, $item['namespace'], $item['rootpath'], $item['len']);
+                    $result = self::matchNamespace($FQCN, $item['namespace'], $item['basedir'], $item['len']);
                     if ($result) {
                         return true;
                     }
                     break;
 
                 case 'psr4':
-                    $result = self::matchPsr4($FQCN, $item['namespace'], $item['rootpath'], $item['len']);
+                    $result = self::matchPsr4($FQCN, $item['namespace'], $item['basedir'], $item['len']);
                     if ($result) {
                         return true;
                     }
                     break;
 
                 case 'psr0':
-                    $result = self::matchPsr0($FQCN, $item['namespace'], $item['rootpath'], $item['len']);
+                    $result = self::matchPsr0($FQCN, $item['namespace'], $item['basedir'], $item['len']);
                     if ($result) {
                         return true;
                     }
@@ -83,20 +83,20 @@ class Autoloader
      * Adds a PSR-4 namespace
      *
      * @param string $namespace  Namespace. such as 'your\\namespace'
-     * @param string $rootpath   Rootpath. such as '/your/namespace/root/rootpath/'
+     * @param string $basedir   BaseDir. such as '/your/namespace/base/directory/'
      *
      * @return bool
      */
-    public static function addPsr4($namespace, $rootpath)
+    public static function addPsr4($namespace, $basedir)
     {
         // Initialize
         self::init();
 
-        // Checks $rootpath
-        if (!file_exists($rootpath) || !is_dir($rootpath)) {
+        // Checks $basedir
+        if (!file_exists($basedir) || !is_dir($basedir)) {
             return false;
         } else {
-            $rootpath = realpath($rootpath);
+            $basedir = realpath($basedir);
         }
 
         // Preproccesses $namepsace
@@ -106,7 +106,7 @@ class Autoloader
         self::$_queue[] = [
             'type'      => 'psr4',
             'namespace' => $namespace,
-            'rootpath'  => $rootpath,
+            'basedir'   => $basedir,
             'len'       => strlen($namespace),
         ];
 
@@ -117,7 +117,7 @@ class Autoloader
     /**
      * Matches a PSR-4 namespace
      */
-    private static function matchPsr4($FQCN, $namespace, $rootpath, $len)
+    private static function matchPsr4($FQCN, $namespace, $basedir, $len)
     {
         // Checks if the prefix is matched.
         if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
@@ -128,7 +128,7 @@ class Autoloader
         $rest = substr($FQCN, $len + 1);
 
         // Checks if the target php file exists.
-        $target = "{$rootpath}/{$rest}.php";
+        $target = "{$basedir}/{$rest}.php";
         if (file_exists($target) && is_file($target)) {
             require $target;
             return true;
@@ -142,20 +142,20 @@ class Autoloader
      * Adds a PSR-0 namespace
      *
      * @param string $namespace  Namespace. such as 'your\\namespace'
-     * @param string $rootpath   Rootpath. such as '/your/namespace/root/rootpath/'
+     * @param string $basedir    BaseDir. such as '/your/namespace/base/directory/'
      *
      * @return bool
      */
-    public static function addPsr0($namespace, $rootpath)
+    public static function addPsr0($namespace, $basedir)
     {
         // Initialize
         self::init();
 
-        // Checks $rootpath
-        if (!file_exists($rootpath) || !is_dir($rootpath)) {
+        // Checks $basedir
+        if (!file_exists($basedir) || !is_dir($basedir)) {
             return false;
         } else {
-            $rootpath = realpath($rootpath);
+            $basedir = realpath($basedir);
         }
 
         // Preproccesses $namepsace
@@ -165,7 +165,7 @@ class Autoloader
         self::$_queue[] = [
             'type'      => 'psr0',
             'namespace' => $namespace,
-            'rootpath'  => $rootpath,
+            'basedir'   => $basedir,
             'len'       => strlen($namespace),
         ];
 
@@ -176,7 +176,7 @@ class Autoloader
     /**
      * Matches a PSR-0 namespace
      */
-    private static function matchPsr0($FQCN, $namespace, $rootpath, $len)
+    private static function matchPsr0($FQCN, $namespace, $basedir, $len)
     {
         // Checks if the prefix is matched.
         if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
@@ -191,9 +191,9 @@ class Autoloader
 
         // Checks if the target php file exists.
         if ($namespace === '') {
-            $target = "{$rootpath}/{$rest}.php";
+            $target = "{$basedir}/{$rest}.php";
         } else {
-            $target = "{$rootpath}/{$namespace}/{$rest}.php";
+            $target = "{$basedir}/{$namespace}/{$rest}.php";
         }
 
         if (file_exists($target) && is_file($target)) {
@@ -210,24 +210,24 @@ class Autoloader
      *
      * If try to match the \Namepsace\Your\Cool\Class,
      * it will check:
-     *   <rootpath>/Your/Cool/Class.php
-     *   <rootpath>/Your/Cool/Class/Class.php
+     *   <basedir>/Your/Cool/Class.php
+     *   <basedir>/Your/Cool/Class/Class.php
      *
      * @param string $namespace  Namespace. such as 'your\\namespace'
-     * @param string $rootpath   Rootpath. such as '/your/namespace/root/rootpath/'
+     * @param string $basedir    BaseDir. such as '/your/namespace/base/directory/'
      *
      * @return bool
      */
-    public static function addNamespace($namespace, $rootpath)
+    public static function addNamespace($namespace, $basedir)
     {
         // Initialize
         self::init();
 
-        // Checks $rootpath
-        if (!file_exists($rootpath) || !is_dir($rootpath)) {
+        // Checks $basedir
+        if (!file_exists($basedir) || !is_dir($basedir)) {
             return false;
         } else {
-            $rootpath = realpath($rootpath);
+            $basedir = realpath($basedir);
         }
 
         // Preproccesses $namepsace
@@ -237,7 +237,7 @@ class Autoloader
         self::$_queue[] = [
             'type'      => 'namespace',
             'namespace' => $namespace,
-            'rootpath'  => $rootpath,
+            'basedir'   => $basedir,
             'len'       => strlen($namespace),
         ];
 
@@ -248,7 +248,7 @@ class Autoloader
     /**
      * Matches a namespace
      */
-    private static function matchNamespace($FQCN, $namespace, $rootpath, $len)
+    private static function matchNamespace($FQCN, $namespace, $basedir, $len)
     {
         // Checks if the prefix is matched.
         if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
@@ -259,7 +259,7 @@ class Autoloader
         $rest = substr($FQCN, $len + 1);
 
         // Checks if the target php file exists.
-        $target = "$rootpath/$rest.php";
+        $target = "$basedir/$rest.php";
         if (file_exists($target) && is_file($target)) {
             require $target;
             return true;
@@ -267,7 +267,7 @@ class Autoloader
 
         // If $rest not contain '\'
         if (strpos($rest, '\\') === false) {
-            $target = "{$rootpath}/{$rest}/{$rest}.php";
+            $target = "{$basedir}/{$rest}/{$rest}.php";
             if (file_exists($target) && is_file($target)) {
                 require $target;
                 return true;
@@ -280,8 +280,8 @@ class Autoloader
         $array = explode('\\', $rest);
         $name = array_pop($array);
         $base = implode('/', $array);
-        $target1 = "{$rootpath}/{$base}/{$name}.php";
-        $target2 = "{$rootpath}/{$base}/{$name}/{$name}.php";
+        $target1 = "{$basedir}/{$base}/{$name}.php";
+        $target2 = "{$basedir}/{$base}/{$name}/{$name}.php";
         if (file_exists($target1) && is_file($target1)) {
             require $target1;
             return true;
@@ -298,11 +298,11 @@ class Autoloader
      * Adds a class map file
      *
      * @param string $mapfile   The real path of the class map file.
-     * @param string $rootpath  The root path. default uses the mapfile's directory.
+     * @param string $basedir  The base directory. default is the mapfile's directory.
      *
      * @return bool
      */
-    public static function addClassmap($mapfile, $rootpath = null)
+    public static function addClassmap($mapfile, $basedir = null)
     {
         // Initialize
         self::init();
@@ -314,21 +314,21 @@ class Autoloader
             $mapfile = realpath($mapfile);
         }
 
-        // Checks $rootpath
-        if (is_null($rootpath)) {
-            $rootpath = dirname($mapfile);
-        } elseif (!is_string($rootpath) || !file_exists($rootpath) || !is_dir($rootpath)) {
+        // Checks $basedir
+        if (is_null($basedir)) {
+            $basedir = dirname($mapfile);
+        } elseif (!is_string($basedir) || !file_exists($basedir) || !is_dir($basedir)) {
             return false;
         } else {
-            $rootpath = realpath($rootpath);
+            $basedir = realpath($basedir);
         }
 
         // Adds it to $_queue
         self::$_queue[] = [
-            'type'     => 'classmap',
-            'mapfile'  => $mapfile,
-            'rootpath' => $rootpath,
-            'map'      => null,
+            'type'    => 'classmap',
+            'mapfile' => $mapfile,
+            'basedir' => $basedir,
+            'map'     => null,
         ];
 
         return true;
@@ -338,7 +338,7 @@ class Autoloader
     /**
      * Matches FQCN from the map file
      */
-    private static function matchClassmap($FQCN, $mapfile, $rootpath, &$map)
+    private static function matchClassmap($FQCN, $mapfile, $basedir, &$map)
     {
         // If first run, loads the mapfile content to $map.
         if (is_null($map)) {
@@ -362,7 +362,7 @@ class Autoloader
         }
 
         // Loads the target file.
-        $target = $rootpath . '/' . $map[$FQCN];
+        $target = $basedir . '/' . $map[$FQCN];
         if (file_exists($target) && is_file($target)) {
             require $target;
             return true;
