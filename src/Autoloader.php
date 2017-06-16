@@ -58,6 +58,13 @@ class Autoloader
                     }
                     break;
 
+                case 'psr0':
+                    $result = self::matchPsr0($FQCN, $item['namespace'], $item['rootpath'], $item['len']);
+                    if ($result) {
+                        return true;
+                    }
+                    break;
+
                 case 'alias':
                     $result = self::matchAlias($FQCN, $item['alias'], $item['real']);
                     if ($result) {
@@ -182,6 +189,41 @@ class Autoloader
             'mapfile'  => $mapfile,
             'rootpath' => $rootpath,
             'map'      => null,
+        ];
+
+        return true;
+    }
+
+
+    /**
+     * Adds a PSR-0 namespace
+     *
+     * @param string $namespace  Namespace. such as 'your\\namespace'
+     * @param string $rootpath   Rootpath. such as '/your/namespace/root/rootpath/'
+     *
+     * @return bool
+     */
+    public static function addPsr0($namespace, $rootpath)
+    {
+        // Initialize
+        self::init();
+
+        // Checks $rootpath
+        if (!file_exists($rootpath) || !is_dir($rootpath)) {
+            return false;
+        } else {
+            $rootpath = realpath($rootpath);
+        }
+
+        // Preproccesses $namepsace
+        $namespace = trim($namespace, " \\\t\n\r\0\x0B");
+
+        // Adds it to $_queue
+        self::$_queue[] = [
+            'type'      => 'psr0',
+            'namespace' => $namespace,
+            'rootpath'  => $rootpath,
+            'len'       => strlen($namespace),
         ];
 
         return true;
@@ -329,6 +371,38 @@ class Autoloader
     {
         if ($FQCN === $alias) {
             return class_alias($real, $alias);
+        } else {
+            return false;
+        }
+    }
+
+
+    /**
+     * Matches a PSR-0 namespace
+     */
+    public static function matchPsr0($FQCN, $namespace, $rootpath, $len)
+    {
+        // Checks if the prefix is matched.
+        if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
+            return false;
+        }
+
+        // Strips the namespace
+        $rest = substr($FQCN, $len + 1);
+
+        // deal with '_' in the rest
+        $rest = str_replace('_', DIRECTORY_SEPARATOR, $rest);
+
+        // Checks if the target php file exists.
+        if ($namespace === '') {
+            $target = "{$rootpath}/{$rest}.php";
+        } else {
+            $target = "{$rootpath}/{$namespace}/{$rest}.php";
+        }
+
+        if (file_exists($target) && is_file($target)) {
+            require $target;
+            return true;
         } else {
             return false;
         }
