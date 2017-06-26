@@ -24,12 +24,13 @@ https://github.com/zeupin/dida-autoloader/blob/master/src/Autoloader.php
 public static function init();
 ```
 
-### Four loader types:
+### Five loader types:
 
 ```php
-public static function addPsr4($namespace, $rootpath);
-public static function addNamespace($namespace, $rootpath);
-public static function addClassmap($mapfile, $rootpath = null);
+public static function addPsr4($namespace, $basedir);
+public static function addPsr0($namespace, $basedir)
+public static function addNamespace($namespace, $basedir);
+public static function addClassmap($mapfile, $basedir = null);
 public static function addAlias($alias, $real);
 ```
 
@@ -39,13 +40,13 @@ public static function addAlias($alias, $real);
 require FOO_PATH . 'Autoloader.php';
 
 Autoloader::init();
-Autoloader::addClassmap(__DIR__ . 'FooMap.php', '/your/real/root/path');
+Autoloader::addClassmap(__DIR__ . 'FooMap.php', '/your/real/base/path');
 Autoloader::addNamespace('Foo\\Bar', __DIR__ . '/Your/Path');
 ```
 
 ### Classmap File
 
-If you use the `addClassmap($mapfile, $rootpath)` function, here is a mapfile sample:
+If you use the `addClassmap($mapfile, $basedir)` function, here is a mapfile sample:
 
 ```php
 <?php
