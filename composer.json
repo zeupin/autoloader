@@ -3,12 +3,12 @@
   "description": "A class autoloader",
   "type": "library",
   "license": "MIT",
-  "homepage": "https://github.com/zeupin/autoloader",
+  "homepage": "https://github.com/zeupin/dida-autoloader",
   "authors": [
     {
       "name": "Macc Liu",
       "email": "mail@maccliu.com",
-      "homepage": "http://maccliu.com"
+      "homepage": "https://github.com/maccliu"
     }
   ],
   "minimum-stability": "dev",

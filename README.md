@@ -64,8 +64,8 @@ return [
 
 ## Credits
 
-* [Zeupin, LLC](http://zeupin.com) , especially [Dida Team](http://dida.zeupin.com)
+* [Zeupin LLC](http://zeupin.com) , especially [Dida Team](http://dida.zeupin.com)
 
 ## License
 
-Copyright (c) 2017 Zeupin, LLC. Released under the [MIT license](LICENSE).
+Copyright (c) 2017 Zeupin LLC. Released under the [MIT license](LICENSE).
