@@ -2,6 +2,9 @@
 
 Autoloader is a powerful class loader. It's a part of Dida Framework.
 
+* Five modes: PSR-4, PSR-0, Namespace, Classmap, Alias.
+* Friendly MIT License.
+
 ## Installation
 
 ### Install via Composer
@@ -28,7 +31,7 @@ public static function init();
 
 ```php
 public static function addPsr4($namespace, $basedir);
-public static function addPsr0($namespace, $basedir)
+public static function addPsr0($namespace, $basedir);
 public static function addNamespace($namespace, $basedir);
 public static function addClassmap($mapfile, $basedir = null);
 public static function addAlias($alias, $real);
