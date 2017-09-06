@@ -4,20 +4,36 @@ Autoloader is a powerful class loader. It's a part of Dida Framework.
 
 * Five modes: PSR-4, PSR-0, Namespace, Classmap, Alias.
 * Friendly MIT License.
+* Just a single file.
 
 ## Installation
 
-### Install via Composer
+### Method 1: Download the latest Autoloader.php, and include it directly. (Recommended)
+
+Download from this url:
+
+```
+https://github.com/zeupin/dida-autoloader/blob/master/src/Autoloader.php
+```
+
+Include it in your project:
+
+```php
+// step 1
+include '/path/to/Autoloader.php';
+Autoloadeer::init();
+
+// step 2
+include '/path/to/composer/vendor/autoload.php';
+```
+
+### Method 2: Install via Composer
 
 ```
 composer require dida/autoloader
 ```
 
-### Download the latest Autoloader.php
-
-```
-https://github.com/zeupin/dida-autoloader/blob/master/src/Autoloader.php
-```
+**Attention:** If you use this method, PHP will give priority to `the composer's autoload`, if not found, then match the items in `your Autoloader`.Please pay attention to the priority.
 
 ## API
 
