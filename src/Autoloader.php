@@ -3,19 +3,25 @@
  * Dida Framework --Powered by Zeupin LLC
  * http://dida.zeupin.com
  */
-
 class Autoloader
 {
+    /**
+     * @var boolean
+     */
     private static $_initialized = false;
+
+    /**
+     * @var array
+     */
     private static $_queue = [];
 
 
     /**
-     * Initialization
+     * Initialization. Its purpose is to register this class to SPL autoload.
      */
     public static function init()
     {
-        // only run once
+        // run once only
         if (self::$_initialized) {
             return;
         }
