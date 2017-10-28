@@ -3,8 +3,19 @@
  * Dida Framework --Powered by Zeupin LLC
  * http://dida.zeupin.com
  */
+
+namespace Dida;
+
+/**
+ * Autoloader
+ */
 class Autoloader
 {
+    /**
+     * 版本号
+     */
+    const VERSION = '0.1.6';
+
     /**
      * @var boolean
      */
@@ -17,27 +28,30 @@ class Autoloader
 
 
     /**
-     * Initialization. Its purpose is to register this class to SPL autoload.
+     * 初始化。
+     * 把本类注册到系统的spl_autoload_register中。
      */
     public static function init()
     {
-        // run once only
+        // 以单例模式运行
         if (self::$_initialized) {
             return;
         }
 
-        // register the autoload() callback
+        // 注册callback函数为autoload()
         spl_autoload_register([__CLASS__, 'autoload']);
 
-        // set the flag
+        // 设置单例标志
         self::$_initialized = true;
     }
 
 
     /**
-     * Checks the queue, autoloads if matched one.
+     * 依次检查当前登记的队列，如果能找到匹配FQCN，就进行自动加载。
      *
-     * @param string $FQCN  Fully Qualified Class Name.
+     * @param string $FQCN  FQCN(Fully Qualified Class Name)
+     *
+     * @return boolean 是否找到了匹配记录。
      */
     protected static function autoload($FQCN)
     {
@@ -45,13 +59,6 @@ class Autoloader
             switch ($item['type']) {
                 case 'classmap':
                     $result = self::matchClassmap($FQCN, $item['mapfile'], $item['basedir'], $item['map']);
-                    if ($result) {
-                        return true;
-                    }
-                    break;
-
-                case 'namespace':
-                    $result = self::matchNamespace($FQCN, $item['namespace'], $item['basedir'], $item['len']);
                     if ($result) {
                         return true;
                     }
@@ -80,35 +87,41 @@ class Autoloader
             }
         }
 
-        // Not matched anyone, return false
+        // 如果队列中都没有，则返回false。
         return false;
     }
 
 
     /**
-     * Adds a PSR-4 namespace
+     * 新增一个PSR-4风格的加载模板。
      *
-     * @param string $namespace  Namespace. such as 'your\\namespace'
-     * @param string $basedir   BaseDir. such as '/your/namespace/base/directory/'
+     * @param string $namespace  名称空间。如：'your\\namespace\\'
+     *     如果$namespace的最前面一个字符是“\”，会自动去除。
+     *     如果$namespace的最后一个字符不是“\”，会自动加上。
+     * @param string $basedir    基准目录。如：'/your/namespace/base/directory/'
      *
-     * @return bool
+     * @return boolean
      */
     public static function addPsr4($namespace, $basedir)
     {
-        // Initialize
+        // 确保初始化已经完成
         self::init();
 
-        // Checks $basedir
+        // 检查 $basedir
         if (!file_exists($basedir) || !is_dir($basedir)) {
             return false;
         } else {
             $basedir = realpath($basedir);
         }
 
-        // Preproccesses $namepsace
-        $namespace = trim($namespace, " \\\t\n\r\0\x0B");
+        // 把$namepsace标准化。
+        if (!is_string($namespace)) {
+            return false;
+        }
+        $namespace = trim($namespace, "\\ \t\n\r\0\x0B"); // 所有的空白字符以及“\”
+        $namespace = $namespace . '\\';
 
-        // Adds it to $_queue
+        // 加到查询队列中
         self::$_queue[] = [
             'type'      => 'psr4',
             'namespace' => $namespace,
@@ -116,24 +129,25 @@ class Autoloader
             'len'       => strlen($namespace),
         ];
 
+        // 完成
         return true;
     }
 
 
     /**
-     * Matches a PSR-4 namespace
+     * 匹配一个PSR-4风格的加载模板。
      */
     private static function matchPsr4($FQCN, $namespace, $basedir, $len)
     {
-        // Checks if the prefix is matched.
-        if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
+        // 检查FQCN是否位于这个namespace
+        if (strncmp($FQCN, $namespace, $len) !== 0) {
             return false;
         }
 
-        // Strips the namespace
-        $rest = substr($FQCN, $len + 1);
+        // 截取要匹配的部分
+        $rest = substr($FQCN, $len);
 
-        // Checks if the target php file exists.
+        // 检查目标文件是否存在
         $target = "{$basedir}/{$rest}.php";
         if (file_exists($target) && is_file($target)) {
             require $target;
@@ -145,29 +159,35 @@ class Autoloader
 
 
     /**
-     * Adds a PSR-0 namespace
+     * 新增一个PSR-0风格的加载模板
      *
-     * @param string $namespace  Namespace. such as 'your\\namespace'
-     * @param string $basedir    BaseDir. such as '/your/namespace/base/directory/'
+     * @param string $namespace  名称空间。如：'your\\namespace\\'
+     *     如果$namespace的最前面一个字符是“\”，会自动去除。
+     *     如果$namespace的最后一个字符不是“\”，会自动加上。
+     * @param string $basedir    基准目录。如：'/your/namespace/base/directory/'
      *
-     * @return bool
+     * @return boolean
      */
     public static function addPsr0($namespace, $basedir)
     {
-        // Initialize
+        // 确保初始化已经完成
         self::init();
 
-        // Checks $basedir
+        // 检查 $basedir
         if (!file_exists($basedir) || !is_dir($basedir)) {
             return false;
         } else {
             $basedir = realpath($basedir);
         }
 
-        // Preproccesses $namepsace
-        $namespace = trim($namespace, " \\\t\n\r\0\x0B");
+        // 把$namepsace标准化。
+        if (!is_string($namespace)) {
+            return false;
+        }
+        $namespace = trim($namespace, "\\ \t\n\r\0\x0B"); // 所有的空白字符以及“\”
+        $namespace = $namespace . '\\';
 
-        // Adds it to $_queue
+        // 加到查询队列中
         self::$_queue[] = [
             'type'      => 'psr0',
             'namespace' => $namespace,
@@ -175,33 +195,35 @@ class Autoloader
             'len'       => strlen($namespace),
         ];
 
+        // 完成
         return true;
     }
 
 
     /**
-     * Matches a PSR-0 namespace
+     * 匹配一个PSR-0风格的加载模板。
      */
     private static function matchPsr0($FQCN, $namespace, $basedir, $len)
     {
-        // Checks if the prefix is matched.
-        if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
+        // 检查是否位于这个namespace下
+        if (strncmp($FQCN, $namespace, $len) !== 0) {
             return false;
         }
 
-        // Strips the namespace
-        $rest = substr($FQCN, $len + 1);
+        // 截取要匹配的部分
+        $rest = substr($FQCN, $len);
 
-        // deal with '_' in the rest
+        // 处理PSR-0中对于“_”的定义
         $rest = str_replace('_', DIRECTORY_SEPARATOR, $rest);
 
-        // Checks if the target php file exists.
+        // 检查目标文件是否存在
         if ($namespace === '') {
             $target = "{$basedir}/{$rest}.php";
         } else {
             $target = "{$basedir}/{$namespace}/{$rest}.php";
         }
 
+        // 如果目标文件存在，则require进来
         if (file_exists($target) && is_file($target)) {
             require $target;
             return true;
@@ -212,115 +234,26 @@ class Autoloader
 
 
     /**
-     * Adds a namespace.
+     * 新增一个classmap风格的加载模板。
      *
-     * If try to match the \Namepsace\Your\Cool\Class,
-     * it will check:
-     *   <basedir>/Your/Cool/Class.php
-     *   <basedir>/Your/Cool/Class/Class.php
+     * @param string $mapfile  mapfile文件，详见README.md中的说明。
+     * @param string $basedir  mapfile中定义的类文件所在的基准目录。
      *
-     * @param string $namespace  Namespace. such as 'your\\namespace'
-     * @param string $basedir    BaseDir. such as '/your/namespace/base/directory/'
-     *
-     * @return bool
-     */
-    public static function addNamespace($namespace, $basedir)
-    {
-        // Initialize
-        self::init();
-
-        // Checks $basedir
-        if (!file_exists($basedir) || !is_dir($basedir)) {
-            return false;
-        } else {
-            $basedir = realpath($basedir);
-        }
-
-        // Preproccesses $namepsace
-        $namespace = trim($namespace, " \\\t\n\r\0\x0B");
-
-        // Adds it to $_queue
-        self::$_queue[] = [
-            'type'      => 'namespace',
-            'namespace' => $namespace,
-            'basedir'   => $basedir,
-            'len'       => strlen($namespace),
-        ];
-
-        return true;
-    }
-
-
-    /**
-     * Matches a namespace
-     */
-    private static function matchNamespace($FQCN, $namespace, $basedir, $len)
-    {
-        // Checks if the prefix is matched.
-        if (strncmp($FQCN, $namespace . '\\', $len + 1) !== 0) {
-            return false;
-        }
-
-        // Strips the namespace
-        $rest = substr($FQCN, $len + 1);
-
-        // Checks if the target php file exists.
-        $target = "$basedir/$rest.php";
-        if (file_exists($target) && is_file($target)) {
-            require $target;
-            return true;
-        }
-
-        // If $rest not contain '\'
-        if (strpos($rest, '\\') === false) {
-            $target = "{$basedir}/{$rest}/{$rest}.php";
-            if (file_exists($target) && is_file($target)) {
-                require $target;
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        // If $rest contains '\', split $rest to $base + $name, then checks files exist.
-        $array = explode('\\', $rest);
-        $name = array_pop($array);
-        $base = implode('/', $array);
-        $target1 = "{$basedir}/{$base}/{$name}.php";
-        $target2 = "{$basedir}/{$base}/{$name}/{$name}.php";
-        if (file_exists($target1) && is_file($target1)) {
-            require $target1;
-            return true;
-        } elseif (file_exists($target2) && is_file($target2)) {
-            require $target2;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
-    /**
-     * Adds a class map file
-     *
-     * @param string $mapfile   The real path of the class map file.
-     * @param string $basedir  The base directory. default is the mapfile's directory.
-     *
-     * @return bool
+     * @return boolean
      */
     public static function addClassmap($mapfile, $basedir = null)
     {
-        // Initialize
+        // 确保初始化已经完成
         self::init();
 
-        // Checks $mapfile
+        // 检查mapfile
         if (!file_exists($mapfile) || !is_file($mapfile)) {
             return false;
         } else {
             $mapfile = realpath($mapfile);
         }
 
-        // Checks $basedir
+        // 检查$basedir
         if (is_null($basedir)) {
             $basedir = dirname($mapfile);
         } elseif (!is_string($basedir) || !file_exists($basedir) || !is_dir($basedir)) {
@@ -329,7 +262,7 @@ class Autoloader
             $basedir = realpath($basedir);
         }
 
-        // Adds it to $_queue
+        // 加到查询队列中
         self::$_queue[] = [
             'type'    => 'classmap',
             'mapfile' => $mapfile,
@@ -337,37 +270,38 @@ class Autoloader
             'map'     => null,
         ];
 
+        // 完成
         return true;
     }
 
 
     /**
-     * Matches FQCN from the map file
+     * 匹配一个mapfile风格的加载模板
      */
     private static function matchClassmap($FQCN, $mapfile, $basedir, &$map)
     {
-        // If first run, loads the mapfile content to $map.
+        // 如果是首次运行，先把mapfile的内容做下缓存
         if (is_null($map)) {
             $map = require($mapfile);
 
-            // Checks $map, sets it to [] if invalid.
+            // 检查mapfile的内容是否合法
             if (!is_array($map)) {
                 $map = [];
                 return false;
             }
         }
 
-        // Checks if $map is empty.
+        // 如果内容是个空数组，则无需查询，直接退出就行
         if (empty($map)) {
             return false;
         }
 
-        // Checks if FQCN exists.
+        // 检查map里面是否有FQCN
         if (!array_key_exists($FQCN, $map)) {
             return false;
         }
 
-        // Loads the target file.
+        // 如果找到这条记录，载入对应的文件。如果对应的文件不存在，返回false
         $target = $basedir . '/' . $map[$FQCN];
         if (file_exists($target) && is_file($target)) {
             require $target;
@@ -379,31 +313,32 @@ class Autoloader
 
 
     /**
-     * Add an alias
+     * 新增一个alias风格的加载模板。
      *
-     * @param string $alias  Your\Class\Alias
-     * @param string $real   \Its\Real\FQCN
+     * @param string $alias  别名。如：Your\Class\Alias，注意：最前面没有“\”。
+     * @param string $real   对应的实际类名。如：\Its\Real\FQCN，注意，最前面有“\”。
      *
-     * @return bool
+     * @return boolean
      */
     public static function addAlias($alias, $real)
     {
-        // Initialize
+        // 确保初始化已经完成
         self::init();
 
-        // Adds it to $_queue
+        // 加到查询队列中
         self::$_queue[] = [
             'type'  => 'alias',
             'alias' => $alias,
             'real'  => $real,
         ];
 
+        // 完成
         return true;
     }
 
 
     /**
-     * Matches an alias
+     * 匹配一个alias风格的加载模板。
      */
     private static function matchAlias($FQCN, $alias, $real)
     {
