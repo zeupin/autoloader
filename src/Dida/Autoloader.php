@@ -8,7 +8,7 @@ namespace Dida;
 
 class Autoloader
 {
-    const VERSION = '0.1.6';
+    const VERSION = '20171211';
 
     private static $_initialized = false;
 
@@ -101,6 +101,9 @@ class Autoloader
         $rest = substr($FQCN, $len);
 
         $target = "{$basedir}/{$rest}.php";
+
+        $target = str_replace('\\', '/', $target);
+
         if (file_exists($target) && is_file($target)) {
             require $target;
             return true;
@@ -152,6 +155,8 @@ class Autoloader
         } else {
             $target = "{$basedir}/{$namespace}/{$rest}.php";
         }
+
+        $target = str_replace('\\', '/', $target);
 
         if (file_exists($target) && is_file($target)) {
             require $target;
@@ -211,6 +216,9 @@ class Autoloader
         }
 
         $target = $basedir . '/' . $map[$FQCN];
+
+        $target = str_replace('\\', '/', $target);
+
         if (file_exists($target) && is_file($target)) {
             require $target;
             return true;
