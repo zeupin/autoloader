@@ -104,7 +104,7 @@ return [
 
 ## 版权声明
 
-版权所有 (c) 2017-2019 上海宙品信息科技有限公司。<br>Copyright (c) 2017-2019 Zeupin LLC. <http://zeupin.com>
+版权所有 (c) 上海宙品信息科技有限公司。<br>Copyright (c) Zeupin LLC. <http://zeupin.com>
 
 源代码采用 MIT 授权协议。<br>Licensed under The MIT License.
 
